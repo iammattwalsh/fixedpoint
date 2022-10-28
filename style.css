@@ -1,13 +1,13 @@
 body {
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-canvas {
+.trans {
     transition: .5s;
 }
 
