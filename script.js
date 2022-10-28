@@ -1,5 +1,6 @@
 let canvases = document.getElementsByTagName('canvas')
-let canvas2 = document.getElementById('canvas2') 
+let canvas1 = document.getElementById('canvas1')
+let canvas2 = document.getElementById('canvas2')
 
 let pageWidth = window.innerWidth
 let pageHeight = window.innerHeight
@@ -10,10 +11,13 @@ let numDots = Math.round(pageWidth * pageHeight / 400)
 
 let maxRad = 10
 let maxRot = 5
+let rotVal
 
 let xVals = []
 let yVals = []
 let rVals = []
+
+let followMouse = false
 
 for (let i = 0; i < numDots; i++) {
     xVals.push(Math.round(Math.random() * canvWidth))
@@ -32,26 +36,69 @@ Array.from(canvases).forEach(c => {
     }
 })
 
-function randomRot(element, clickLoc = null) {
-    let rotVal = Math.random() * maxRot
-    if (rotVal < 1) {
-        rotVal = 1
+function randomRot(element, mouseLoc = null) {
+    if (!followMouse) {
+        rotVal = Math.random() * maxRot
+        if (rotVal < 1) {
+            rotVal = 1
+        }
+        rotVal = Math.random() < .5 ? rotVal * -1 : rotVal
+        element.style.transform = `rotate(${rotVal}deg)`
     }
-    rotVal = Math.random() < .5 ? rotVal * -1 : rotVal
-    element.style.transform = `rotate(${rotVal}deg)`
-    if (clickLoc != null) {
-        element.style.transformOrigin = `${clickLoc[0]}% ${clickLoc[1]}%`
+    if (mouseLoc != null) {
+        element.style.transformOrigin = `${mouseLoc[0]}% ${mouseLoc[1]}%`
     }
 }
 
 randomRot(canvas2)
 
-function logLoc(event) {
-    let clickLoc = [
-        (event.clientX + ((canvWidth - pageWidth) / 2)) / canvWidth * 100,
-        (event.clientY + ((canvHeight - pageHeight) / 2)) / canvHeight * 100,
-    ]
-    randomRot(canvas2, clickLoc)
+function mouseClick(e) {
+    if (!followMouse) {
+        let clickLoc = [
+            (e.clientX + ((canvWidth - pageWidth) / 2)) / canvWidth * 100,
+            (e.clientY + ((canvHeight - pageHeight) / 2)) / canvHeight * 100,
+        ]
+        randomRot(canvas2, clickLoc)
+    }
 }
 
-document.addEventListener('click', logLoc)
+function mouseMove(e) {
+    if (followMouse) {
+        let clickLoc = [
+            (e.clientX + ((canvWidth - pageWidth) / 2)) / canvWidth * 100,
+            (e.clientY + ((canvHeight - pageHeight) / 2)) / canvHeight * 100,
+        ]
+        randomRot(canvas2, clickLoc)
+    }
+}
+
+function scrollRot(e) {
+    if (followMouse) {
+        if (e.deltaY > 0 && rotVal < 5) {
+            rotVal += .25
+        } else if (e.deltaY < 0 && rotVal > -5) {
+            rotVal -= .25
+        }
+        canvas2.style.transform = `rotate(${rotVal}deg)`
+    }
+    console.log(rotVal)
+}
+
+function toggleMode(e) {
+    if (e.code === 'Space') {
+        followMouse = !followMouse
+    }
+    if (followMouse) {
+        canvas2.classList.remove('trans')
+    } else {
+        canvas2.classList.add('trans')
+    }
+}
+
+document.addEventListener('click', mouseClick)
+
+document.addEventListener('keyup', toggleMode)
+
+document.addEventListener('mousemove', mouseMove)
+
+document.addEventListener('wheel', scrollRot)
